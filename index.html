@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shortest Path Finder — Dijkstra's Algorithm</title>
+  <meta name="description" content="Interactive mini project: find the shortest path between two nodes in a weighted graph using Dijkstra's Algorithm.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="site-header" id="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="brand-icon"><i class="fa-solid fa-route"></i></span>
+        <div>
+          <h1 class="brand-title">Shortest Path Finder</h1>
+          <p class="brand-subtitle">Mini Project · Dijkstra's Algorithm</p>
+        </div>
+      </div>
+      <nav class="header-nav" aria-label="Page sections">
+        <a href="#finder-section">Finder</a>
+        <a href="#steps-section">Steps</a>
+        <a href="#editor-section">Edit Graph</a>
+        <a href="#about-section">How it works</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ========== FINDER ========== -->
+    <section class="card finder-card" id="finder-section" aria-labelledby="finder-title">
+      <div class="card-head">
+        <h2 id="finder-title"><i class="fa-solid fa-magnifying-glass-location"></i> Find the Shortest Path</h2>
+        <p class="muted">Pick a source and destination node, then run Dijkstra's algorithm.</p>
+      </div>
+
+      <form class="finder-form" id="finder-form" autocomplete="off">
+        <div class="field">
+          <label for="source-select">Source</label>
+          <select id="source-select" name="source" required></select>
+        </div>
+
+        <button type="button" class="swap-btn" id="swap-btn" title="Swap source and destination" aria-label="Swap source and destination">
+          <i class="fa-solid fa-right-left"></i>
+        </button>
+
+        <div class="field">
+          <label for="destination-select">Destination</label>
+          <select id="destination-select" name="destination" required></select>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="find-btn">
+          <i class="fa-solid fa-play"></i> Find Path
+        </button>
+        <button type="button" class="btn btn-ghost" id="reset-btn">
+          <i class="fa-solid fa-rotate-left"></i> Reset
+        </button>
+      </form>
+
+      <!-- Result banner -->
+      <div class="result-panel" id="result-panel" aria-live="polite">
+        <div class="result-placeholder" id="result-placeholder">
+          <i class="fa-solid fa-diagram-project"></i>
+          <p>Results will appear here. Choose two nodes and click <strong>Find Path</strong>.</p>
+        </div>
+
+        <div class="result-content hidden" id="result-content">
+          <div class="result-row">
+            <span class="result-label"><i class="fa-solid fa-shoe-prints"></i> Shortest Path:</span>
+            <span class="result-value path-value" id="result-path"></span>
+          </div>
+          <div class="result-row">
+            <span class="result-label"><i class="fa-solid fa-ruler-horizontal"></i> Minimum Distance:</span>
+            <span class="result-value distance-value" id="result-distance"></span>
+          </div>
+          <div class="result-meta" id="result-meta"></div>
+        </div>
+
+        <div class="result-error hidden" id="result-error" role="alert">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span id="result-error-text"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== GRAPH + TABLE ========== -->
+    <div class="two-col">
+      <section class="card graph-card" id="graph-section" aria-labelledby="graph-title">
+        <div class="card-head card-head-row">
+          <h2 id="graph-title"><i class="fa-solid fa-circle-nodes"></i> Graph Visualization</h2>
+          <div class="legend" aria-label="Legend">
+            <span class="legend-item"><span class="legend-dot dot-source"></span>Source</span>
+            <span class="legend-item"><span class="legend-dot dot-dest"></span>Destination</span>
+            <span class="legend-item"><span class="legend-dot dot-path"></span>On path</span>
+            <span class="legend-item"><span class="legend-dot dot-visited"></span>Visited</span>
+          </div>
+        </div>
+        <div class="graph-wrap">
+          <svg id="graph-svg" viewBox="0 0 640 420" role="img" aria-label="Weighted graph of nodes and edges"></svg>
+        </div>
+        <p class="hint muted"><i class="fa-regular fa-lightbulb"></i> Tip: click a node to set it as the source, <kbd>Shift</kbd>+click to set it as the destination.</p>
+      </section>
+
+      <section class="card table-card" id="distance-section" aria-labelledby="distance-title">
+        <div class="card-head">
+          <h2 id="distance-title"><i class="fa-solid fa-table-list"></i> Distance Table</h2>
+          <p class="muted">Final shortest distances from the source to every node.</p>
+        </div>
+        <div class="table-scroll">
+          <table class="data-table" id="distance-table">
+            <thead>
+              <tr><th>Node</th><th>Distance</th><th>Previous</th><th>Path</th></tr>
+            </thead>
+            <tbody id="distance-table-body">
+              <tr><td colspan="4" class="muted center">Run the algorithm to fill this table.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ========== STEP-BY-STEP ========== -->
+    <section class="card steps-card" id="steps-section" aria-labelledby="steps-title">
+      <div class="card-head card-head-row">
+        <h2 id="steps-title"><i class="fa-solid fa-list-ol"></i> Step-by-Step Execution</h2>
+        <div class="step-controls">
+          <button type="button" class="btn btn-small btn-ghost" id="step-prev-btn" disabled><i class="fa-solid fa-backward-step"></i> Prev</button>
+          <span class="step-counter" id="step-counter">0 / 0</span>
+          <button type="button" class="btn btn-small btn-ghost" id="step-next-btn" disabled>Next <i class="fa-solid fa-forward-step"></i></button>
+          <button type="button" class="btn btn-small btn-primary" id="step-play-btn" disabled><i class="fa-solid fa-play"></i> Auto-play</button>
+        </div>
+      </div>
+      <ol class="steps-list" id="steps-list">
+        <li class="muted">No steps yet — run the algorithm first.</li>
+      </ol>
+    </section>
+
+    <!-- ========== GRAPH EDITOR ========== -->
+    <section class="card editor-card" id="editor-section" aria-labelledby="editor-title">
+      <div class="card-head card-head-row">
+        <h2 id="editor-title"><i class="fa-solid fa-pen-to-square"></i> Edit the Graph</h2>
+        <div class="editor-actions">
+          <button type="button" class="btn btn-small btn-ghost" id="load-sample-btn"><i class="fa-solid fa-wand-magic-sparkles"></i> Load sample</button>
+          <button type="button" class="btn btn-small btn-ghost" id="clear-graph-btn"><i class="fa-solid fa-trash"></i> Clear all</button>
+        </div>
+      </div>
+
+      <div class="editor-grid">
+        <form class="editor-form" id="add-edge-form" autocomplete="off">
+          <h3>Add / Update Edge</h3>
+          <div class="field">
+            <label for="edge-from">From node</label>
+            <input type="text" id="edge-from" maxlength="3" placeholder="A" required>
+          </div>
+          <div class="field">
+            <label for="edge-to">To node</label>
+            <input type="text" id="edge-to" maxlength="3" placeholder="B" required>
+          </div>
+          <div class="field">
+            <label for="edge-weight">Weight (≥ 0)</label>
+            <input type="number" id="edge-weight" min="0" step="1" placeholder="4" required>
+          </div>
+          <label class="checkbox">
+            <input type="checkbox" id="edge-directed"> Directed edge (one-way)
+          </label>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add edge</button>
+          <p class="hint muted">New node names are created automatically. Weights must be non-negative — Dijkstra does not support negative edges.</p>
+        </form>
+
+        <div class="edge-list-wrap">
+          <h3>Edges <span class="badge" id="edge-count">0</span></h3>
+          <ul class="edge-list" id="edge-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== ABOUT ========== -->
+    <section class="card about-card" id="about-section" aria-labelledby="about-title">
+      <div class="card-head">
+        <h2 id="about-title"><i class="fa-solid fa-book-open"></i> How Dijkstra's Algorithm Works</h2>
+      </div>
+      <div class="about-grid">
+        <article>
+          <h3>Idea</h3>
+          <p>Dijkstra's algorithm finds the shortest path from a <strong>source</strong> node to every other node in a graph with <strong>non-negative</strong> edge weights. It greedily picks the unvisited node with the smallest known distance and "relaxes" its neighbours.</p>
+        </article>
+        <article>
+          <h3>Steps</h3>
+          <ol>
+            <li>Set distance of source = 0, all others = ∞.</li>
+            <li>Pick the unvisited node <em>u</em> with the smallest distance.</li>
+            <li>For each neighbour <em>v</em>: if <code>dist[u] + w(u,v) &lt; dist[v]</code>, update <code>dist[v]</code> and set <code>prev[v] = u</code>.</li>
+            <li>Mark <em>u</em> visited. Repeat until the destination is visited or no nodes remain.</li>
+            <li>Rebuild the path by following <code>prev</code> from destination back to source.</li>
+          </ol>
+        </article>
+        <article>
+          <h3>Complexity</h3>
+          <p>With a binary min-heap priority queue (used here): <code>O((V + E) log V)</code>, where <em>V</em> = nodes and <em>E</em> = edges. Space: <code>O(V)</code>.</p>
+        </article>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Built with plain HTML, CSS &amp; JavaScript — no frameworks. <i class="fa-solid fa-code"></i></p>
+    </div>
+  </footer>
+
+  <script src="js/dijkstra.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
